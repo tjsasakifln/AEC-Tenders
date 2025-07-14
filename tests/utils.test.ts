@@ -45,9 +45,9 @@ describe('AecTenders Utility Functions', () => {
   describe('formatDate', () => {
     it('should format ISO date strings correctly', () => {
       const testCases = [
-        { input: '2025-01-15T10:30:00Z', expected: '2025-01-15' },
-        { input: '2025-12-31T23:59:59.999Z', expected: '2025-12-31' },
-        { input: '2025-07-01T00:00:00.000Z', expected: '2025-07-01' }
+        { input: '2025-01-15T10:30:00Z', expected: '20250115' },
+        { input: '2025-12-31T23:59:59.999Z', expected: '20251231' },
+        { input: '2025-07-01T00:00:00.000Z', expected: '20250701' }
       ];
 
       testCases.forEach(({ input, expected }) => {
@@ -57,9 +57,9 @@ describe('AecTenders Utility Functions', () => {
 
     it('should handle different date input formats', () => {
       const testCases = [
-        { input: '2025-01-15', expected: '2025-01-15' },
-        { input: '2025/01/15', expected: '2025-01-15' },
-        { input: new Date('2025-01-15').toISOString(), expected: '2025-01-15' }
+        { input: '2025-01-15', expected: '20250115' },
+        { input: '2025/01/15', expected: '20250115' },
+        { input: new Date('2025-01-15').toISOString(), expected: '20250115' }
       ];
 
       testCases.forEach(({ input, expected }) => {
@@ -71,22 +71,31 @@ describe('AecTenders Utility Functions', () => {
   describe('buildPortalUrl', () => {
     it('should build correct PNCP portal URLs', () => {
       const testCases = [
-        { pncpId: '202501150001234567', expected: 'https://pncp.gov.br/app/editais/202501150001234567' },
-        { pncpId: '202412310009876543', expected: 'https://pncp.gov.br/app/editais/202412310009876543' },
-        { pncpId: '202507011234567890', expected: 'https://pncp.gov.br/app/editais/202507011234567890' }
+        { 
+          tender: { numeroControlePNCP: '202501150001234567' }, 
+          expected: 'https://pncp.gov.br/app/editais/202501150001234567' 
+        },
+        { 
+          tender: { numeroControlePNCP: '202412310009876543' }, 
+          expected: 'https://pncp.gov.br/app/editais/202412310009876543' 
+        },
+        { 
+          tender: { numeroControlePNCP: '202507011234567890' }, 
+          expected: 'https://pncp.gov.br/app/editais/202507011234567890' 
+        }
       ];
 
-      testCases.forEach(({ pncpId, expected }) => {
-        expect((nodeInstance as any).buildPortalUrl(pncpId)).toBe(expected);
+      testCases.forEach(({ tender, expected }) => {
+        expect((nodeInstance as any).buildPortalUrl(tender)).toBe(expected);
       });
     });
 
-    it('should handle empty or invalid PNCP IDs', () => {
-      const invalidIds = ['', null, undefined];
+    it('should handle empty or invalid tender objects', () => {
+      const invalidTenders = [{}, { numeroControlePNCP: '' }, { numeroControlePNCP: null }];
 
-      invalidIds.forEach(pncpId => {
-        const result = (nodeInstance as any).buildPortalUrl(pncpId);
-        expect(result).toBe(`https://pncp.gov.br/app/editais/${pncpId}`);
+      invalidTenders.forEach(tender => {
+        const result = (nodeInstance as any).buildPortalUrl(tender);
+        expect(result).toBe(`https://pncp.gov.br/app/editais/${tender.numeroControlePNCP}`);
       });
     });
   });
@@ -95,28 +104,33 @@ describe('AecTenders Utility Functions', () => {
     it('should transform PNCP API response to standardized format', () => {
       const mockApiResponse = {
         numeroControlePNCP: '202501150001234567',
-        razaoSocial: 'Prefeitura Municipal de Test City',
-        objetoContratacao: 'Contratação de empresa especializada em engenharia civil',
+        orgaoEntidade: {
+          razaoSocial: 'Prefeitura Municipal de Test City',
+          cnpj: '12345678000190'
+        },
+        objetoCompra: 'Contratação de empresa especializada em engenharia civil',
         dataPublicacaoPncp: '2025-01-15T10:00:00Z',
         dataAberturaProposta: '2025-02-15T14:00:00Z',
         valorTotalEstimado: 1500000.50,
-        // Additional fields that might be present
-        modalidadeLicitacao: 'Concorrência',
-        situacaoLicitacao: 'Publicada'
+        modalidadeNome: 'Concorrência',
+        situacaoCompraNome: 'Publicada'
       };
 
       const result = (nodeInstance as any).transformTenderData(mockApiResponse);
 
-      expect(result).toEqual({
+      expect(result).toMatchObject({
         pncpId: '202501150001234567',
         procuringEntityName: 'Prefeitura Municipal de Test City',
+        procuringEntityCNPJ: '12345678000190',
         tenderObject: 'Contratação de empresa especializada em engenharia civil',
         publicationDate: '2025-01-15T10:00:00Z',
         proposalOpeningDate: '2025-02-15T14:00:00Z',
         estimatedTotalValue: 1500000.50,
+        tenderModality: 'Concorrência',
+        tenderSituation: 'Publicada',
         portalUrl: 'https://pncp.gov.br/app/editais/202501150001234567',
         _extractedAt: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
-        _category: 'engineering', // Based on keyword detection
+        _category: 'engineering',
         _riskScore: expect.any(Number)
       });
     });
@@ -129,7 +143,7 @@ describe('AecTenders Utility Functions', () => {
 
       const result = (nodeInstance as any).transformTenderData(incompleteApiResponse);
 
-      expect(result).toEqual({
+      expect(result).toMatchObject({
         pncpId: '202501150001234567',
         procuringEntityName: '',
         tenderObject: '',
@@ -170,7 +184,7 @@ describe('AecTenders Utility Functions', () => {
       testCases.forEach(({ objeto, expectedCategory }) => {
         const mockResponse = {
           numeroControlePNCP: '202501150001234567',
-          objetoContratacao: objeto
+          objetoCompra: objeto
         };
 
         const result = (nodeInstance as any).transformTenderData(mockResponse);

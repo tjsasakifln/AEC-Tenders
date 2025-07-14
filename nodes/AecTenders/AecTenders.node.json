@@ -74,7 +74,7 @@
 				}
 			},
 			"default": "",
-			"placeholder": "2024-01-01",
+			"placeholder": "2025-01-01",
 			"description": "Start date for the search (YYYY-MM-DD format)",
 			"required": true
 		},
@@ -89,7 +89,7 @@
 				}
 			},
 			"default": "",
-			"placeholder": "2024-12-31",
+			"placeholder": "2025-12-31",
 			"description": "End date for the search (YYYY-MM-DD format)",
 			"required": true
 		},
@@ -161,7 +161,7 @@
 				}
 			},
 			"default": "",
-			"placeholder": "engenharia, construção, reforma",
+			"placeholder": "engenharia, construï¿½ï¿½o, reforma",
 			"description": "Keywords to search in tender objects (comma-separated)",
 			"required": true
 		},

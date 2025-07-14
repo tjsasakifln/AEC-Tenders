@@ -201,6 +201,8 @@ describe('PNCP API Integration', () => {
 
       (mockExecuteFunctions.getNodeParameter as jest.Mock)
         .mockReturnValueOnce('construção') // lowercase keyword
+        .mockReturnValueOnce('2025-01-01')
+        .mockReturnValueOnce('2025-12-31')
         .mockReturnValueOnce(false)
         .mockReturnValueOnce(10);
 
@@ -244,7 +246,7 @@ describe('PNCP API Integration', () => {
       expect(mockExecuteFunctions.helpers.httpRequest.call).toHaveBeenCalledWith(
         mockExecuteFunctions,
         expect.objectContaining({
-          url: 'https://pncp.gov.br/api/consulta/v1/contratacoes/publicacao/12345678000190/2025/1'
+          url: 'https://pncp.gov.br/api/consulta/v1/orgaos/12345678000190/compras/2025/1'
         })
       );
 

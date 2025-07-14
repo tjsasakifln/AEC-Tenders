@@ -78,7 +78,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Author
 - **Tiago Sasaki** <tiago@confenge.com.br>
-- **GitHub Repository**: [tjsasakifln/AEC-Tenders](https://github.com/tjsasakifln/AEC-Tenders)
+- **GitHub Repository**: [tjsasakifln/n8n-nodes-aec-tenders](https://github.com/tjsasakifln/n8n-nodes-aec-tenders)
 
 ### License
 - MIT License

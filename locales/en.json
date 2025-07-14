@@ -1,0 +1,56 @@
+{
+  "nodes": {
+    "AecTenders": {
+      "displayName": "AEC Tenders",
+      "description": "Fetch Brazilian public procurement tenders from PNCP (Portal Nacional de Contratações Públicas) with focus on Architecture, Engineering, and Construction (AEC) industry",
+      "properties": {
+        "resource": {
+          "displayName": "Resource",
+          "description": "Type of data to work with"
+        },
+        "operation": {
+          "displayName": "Operation", 
+          "description": "Operation to perform"
+        },
+        "startDate": {
+          "displayName": "Start Date",
+          "description": "Publication start date (YYYY-MM-DD format)"
+        },
+        "endDate": {
+          "displayName": "End Date", 
+          "description": "Publication end date (YYYY-MM-DD format)"
+        },
+        "returnAll": {
+          "displayName": "Return All",
+          "description": "Whether to return all results or only up to a given limit"
+        },
+        "limit": {
+          "displayName": "Limit",
+          "description": "Max number of results to return"
+        },
+        "keywords": {
+          "displayName": "Keywords",
+          "description": "Keywords to search for in tender descriptions"
+        },
+        "procuringEntityCNPJ": {
+          "displayName": "Procuring Entity CNPJ",
+          "description": "CNPJ of the procuring entity (14 digits)"
+        },
+        "year": {
+          "displayName": "Year",
+          "description": "Year of the tender"
+        },
+        "sequenceNumber": {
+          "displayName": "Sequence Number",
+          "description": "Sequential number of the tender"
+        }
+      },
+      "operations": {
+        "listByPublicationDate": "List by Publication Date",
+        "listWithOpenProposals": "List with Open Proposals", 
+        "getDetailsById": "Get Details by ID",
+        "searchByKeyword": "Search by Keyword"
+      }
+    }
+  }
+}

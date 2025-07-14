@@ -1,0 +1,56 @@
+{
+  "nodes": {
+    "AecTenders": {
+      "displayName": "Licitações AEC",
+      "description": "Buscar licitações públicas brasileiras do PNCP (Portal Nacional de Contratações Públicas) com foco na indústria de Arquitetura, Engenharia e Construção (AEC)",
+      "properties": {
+        "resource": {
+          "displayName": "Recurso",
+          "description": "Tipo de dados para trabalhar"
+        },
+        "operation": {
+          "displayName": "Operação",
+          "description": "Operação a ser executada"
+        },
+        "startDate": {
+          "displayName": "Data de Início",
+          "description": "Data de início da publicação (formato AAAA-MM-DD)"
+        },
+        "endDate": {
+          "displayName": "Data de Fim",
+          "description": "Data de fim da publicação (formato AAAA-MM-DD)"
+        },
+        "returnAll": {
+          "displayName": "Retornar Todos",
+          "description": "Se deve retornar todos os resultados ou apenas até um limite dado"
+        },
+        "limit": {
+          "displayName": "Limite",
+          "description": "Número máximo de resultados a retornar"
+        },
+        "keywords": {
+          "displayName": "Palavras-chave",
+          "description": "Palavras-chave para buscar nas descrições das licitações"
+        },
+        "procuringEntityCNPJ": {
+          "displayName": "CNPJ do Órgão Licitante",
+          "description": "CNPJ do órgão licitante (14 dígitos)"
+        },
+        "year": {
+          "displayName": "Ano",
+          "description": "Ano da licitação"
+        },
+        "sequenceNumber": {
+          "displayName": "Número Sequencial",
+          "description": "Número sequencial da licitação"
+        }
+      },
+      "operations": {
+        "listByPublicationDate": "Listar por Data de Publicação",
+        "listWithOpenProposals": "Listar com Propostas Abertas",
+        "getDetailsById": "Obter Detalhes por ID",
+        "searchByKeyword": "Buscar por Palavra-chave"
+      }
+    }
+  }
+}

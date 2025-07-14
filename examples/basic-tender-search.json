@@ -1,0 +1,112 @@
+{
+  "name": "Basic AEC Tender Search Example",
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "tender",
+        "operation": "listByPublicationDate",
+        "startDate": "2025-01-01",
+        "endDate": "2025-01-31",
+        "returnAll": false,
+        "limit": 10
+      },
+      "id": "aec-tender-search",
+      "name": "AEC Tenders Search",
+      "type": "n8n-nodes-aec-tenders.aecTenders",
+      "typeVersion": 1,
+      "position": [
+        400,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "filter-engineering",
+              "leftValue": "={{ $json._category }}",
+              "rightValue": "engineering",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "filter-engineering-only",
+      "name": "Filter Engineering Tenders",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        600,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "sort",
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "estimatedTotalValue",
+              "order": "descending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "sort-by-value",
+      "name": "Sort by Value",
+      "type": "n8n-nodes-base.itemLists", 
+      "typeVersion": 3,
+      "position": [
+        800,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "AEC Tenders Search": {
+      "main": [
+        [
+          {
+            "node": "Filter Engineering Tenders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Engineering Tenders": {
+      "main": [
+        [
+          {
+            "node": "Sort by Value",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "example-v1.0.0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "example"
+  },
+  "id": "basic-aec-tender-search",
+  "tags": ["aec", "tenders", "construction", "engineering", "public-procurement"]
+}

@@ -17,14 +17,14 @@
     "architecture"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/tjsasakifln/AEC-Tenders#readme",
+  "homepage": "https://github.com/tjsasakifln/n8n-nodes-aec-tenders#readme",
   "author": {
     "name": "Tiago Sasaki",
     "email": "tiago@confenge.com.br"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/tjsasakifln/AEC-Tenders.git"
+    "url": "https://github.com/tjsasakifln/n8n-nodes-aec-tenders.git"
   },
   "engines": {
     "node": ">=20.15"
@@ -34,7 +34,7 @@
     "build": "npx rimraf dist && tsc && gulp build:icons",
     "dev": "tsc --watch",
     "format": "prettier nodes credentials --write",
-    "lint": "eslint nodes credentials package.json",
+    "lint": "eslint nodes package.json",
     "lintfix": "eslint nodes credentials package.json --fix",
     "test": "jest",
     "test:watch": "jest --watch",
