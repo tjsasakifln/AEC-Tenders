@@ -48,7 +48,7 @@
       "operations": {
         "listByPublicationDate": "Listar por Data de Publicação",
         "listWithOpenProposals": "Listar com Propostas Abertas",
-        "getDetailsById": "Obter Detalhes por ID",
+        "getById": "Obter por ID",
         "searchByKeyword": "Buscar por Palavra-chave"
       }
     }

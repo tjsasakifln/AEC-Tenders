@@ -241,7 +241,7 @@ describe('PNCP API Integration', () => {
         body: mockResponse
       });
 
-      const result = await (nodeInstance as any).getTenderDetailsById(mockExecuteFunctions, 0);
+      const result = await (nodeInstance as any).getTenderById(mockExecuteFunctions, 0);
 
       expect(mockExecuteFunctions.helpers.httpRequest.call).toHaveBeenCalledWith(
         mockExecuteFunctions,

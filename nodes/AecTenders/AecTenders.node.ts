@@ -150,8 +150,8 @@ export class AecTenders implements INodeType {
 						action: 'List tenders with open proposals',
 					},
 					{
-						name: 'Get Details by ID',
-						value: 'getDetailsById',
+						name: 'Get By ID',
+						value: 'getById',
 						description: 'Get detailed information about a specific tender',
 						action: 'Get tender details by ID',
 					},
@@ -176,7 +176,7 @@ export class AecTenders implements INodeType {
 				},
 				default: '',
 				placeholder: '2025-01-01',
-				description: 'Start date for the search (YYYY-MM-DD format)',
+				description: 'Start date for the search in YYYY-MM-DD format (e.g., 2025-01-01)',
 				required: true,
 			},
 			{
@@ -191,7 +191,7 @@ export class AecTenders implements INodeType {
 				},
 				default: '',
 				placeholder: '2025-12-31',
-				description: 'End date for the search (YYYY-MM-DD format)',
+				description: 'End date for the search in YYYY-MM-DD format (e.g., 2025-12-31)',
 				required: true,
 			},
 			{
@@ -215,12 +215,12 @@ export class AecTenders implements INodeType {
 				displayOptions: {
 					show: {
 						resource: ['tender'],
-						operation: ['getDetailsById'],
+						operation: ['getById'],
 					},
 				},
 				default: '',
 				placeholder: '12345678000190',
-				description: 'CNPJ of the procuring entity (14 digits)',
+				description: 'The CNPJ must be exactly 14 digits without formatting (e.g., 12345678000190)',
 				required: true,
 			},
 			{
@@ -230,7 +230,7 @@ export class AecTenders implements INodeType {
 				displayOptions: {
 					show: {
 						resource: ['tender'],
-						operation: ['getDetailsById'],
+						operation: ['getById'],
 					},
 				},
 				default: new Date().getFullYear(),
@@ -244,7 +244,7 @@ export class AecTenders implements INodeType {
 				displayOptions: {
 					show: {
 						resource: ['tender'],
-						operation: ['getDetailsById'],
+						operation: ['getById'],
 					},
 				},
 				default: 1,
@@ -263,7 +263,7 @@ export class AecTenders implements INodeType {
 				},
 				default: '',
 				placeholder: 'engenharia, construção, reforma',
-				description: 'Keywords to search in tender objects (comma-separated)',
+				description: 'Keywords to search in tender descriptions, separated by commas (e.g., engenharia, construção, reforma)',
 				required: true,
 			},
 			{
@@ -319,8 +319,8 @@ export class AecTenders implements INodeType {
 						case 'listWithOpenProposals':
 							responseData = await nodeInstance.getTendersWithOpenProposals(this, i);
 							break;
-						case 'getDetailsById':
-							responseData = await nodeInstance.getTenderDetailsById(this, i);
+						case 'getById':
+							responseData = await nodeInstance.getTenderById(this, i);
 							break;
 						case 'searchByKeyword':
 							responseData = await nodeInstance.searchTendersByKeyword(this, i);
@@ -651,6 +651,16 @@ export class AecTenders implements INodeType {
 					return this.makeAPIRequest(executeFunctions, endpoint, params, retryCount + 1);
 				}
 				
+				// Special handling for rate limiting
+				if (errorPattern.code === 'RATE_LIMIT_EXCEEDED') {
+					const retryAfter = error.response?.headers?.['retry-after'] || 60;
+					throw new NodeApiError(executeFunctions.getNode(), error, {
+						message: `Rate limit exceeded. Try again in ${retryAfter} seconds`,
+						description: `Too many requests to PNCP API. Please wait ${retryAfter} seconds before making new requests.`,
+						httpCode: `${httpStatus}`,
+					});
+				}
+				
 				// Create detailed error for non-retryable or max retry exceeded
 				throw new NodeApiError(executeFunctions.getNode(), error, {
 					message: `PNCP API Error (${errorPattern.code}): ${errorPattern.message}`,
@@ -785,7 +795,7 @@ export class AecTenders implements INodeType {
 		return allTenders;
 	}
 
-	public async getTenderDetailsById(executeFunctions: IExecuteFunctions, itemIndex: number): Promise<IDataObject[]> {
+	public async getTenderById(executeFunctions: IExecuteFunctions, itemIndex: number): Promise<IDataObject[]> {
 		const cnpj = executeFunctions.getNodeParameter('procuringEntityCNPJ', itemIndex) as string;
 		const year = executeFunctions.getNodeParameter('year', itemIndex) as number;
 		const sequenceNumber = executeFunctions.getNodeParameter('sequenceNumber', itemIndex) as number;

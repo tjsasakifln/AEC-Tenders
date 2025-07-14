@@ -48,7 +48,7 @@
       "operations": {
         "listByPublicationDate": "List by Publication Date",
         "listWithOpenProposals": "List with Open Proposals", 
-        "getDetailsById": "Get Details by ID",
+        "getById": "Get By ID",
         "searchByKeyword": "Search by Keyword"
       }
     }

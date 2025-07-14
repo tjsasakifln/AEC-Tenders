@@ -49,8 +49,8 @@
 					"action": "List tenders with open proposals"
 				},
 				{
-					"name": "Get Details by ID",
-					"value": "getDetailsById",
+					"name": "Get By ID",
+					"value": "getById",
 					"description": "Get detailed information about a specific tender",
 					"action": "Get tender details by ID"
 				},
@@ -75,7 +75,7 @@
 			},
 			"default": "",
 			"placeholder": "2025-01-01",
-			"description": "Start date for the search (YYYY-MM-DD format)",
+			"description": "Start date for the search in YYYY-MM-DD format (e.g., 2025-01-01)",
 			"required": true
 		},
 		{
@@ -90,7 +90,7 @@
 			},
 			"default": "",
 			"placeholder": "2025-12-31",
-			"description": "End date for the search (YYYY-MM-DD format)",
+			"description": "End date for the search in YYYY-MM-DD format (e.g., 2025-12-31)",
 			"required": true
 		},
 		{
@@ -114,12 +114,12 @@
 			"displayOptions": {
 				"show": {
 					"resource": ["tender"],
-					"operation": ["getDetailsById"]
+					"operation": ["getById"]
 				}
 			},
 			"default": "",
 			"placeholder": "12345678000190",
-			"description": "CNPJ of the procuring entity (14 digits)",
+			"description": "The CNPJ must be exactly 14 digits without formatting (e.g., 12345678000190)",
 			"required": true
 		},
 		{
@@ -129,7 +129,7 @@
 			"displayOptions": {
 				"show": {
 					"resource": ["tender"],
-					"operation": ["getDetailsById"]
+					"operation": ["getById"]
 				}
 			},
 			"default": 2024,
@@ -143,7 +143,7 @@
 			"displayOptions": {
 				"show": {
 					"resource": ["tender"],
-					"operation": ["getDetailsById"]
+					"operation": ["getById"]
 				}
 			},
 			"default": 1,
@@ -162,7 +162,7 @@
 			},
 			"default": "",
 			"placeholder": "engenharia, constru��o, reforma",
-			"description": "Keywords to search in tender objects (comma-separated)",
+			"description": "Keywords to search in tender descriptions, separated by commas (e.g., engenharia, construção, reforma)",
 			"required": true
 		},
 		{
