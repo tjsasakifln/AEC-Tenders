@@ -365,28 +365,31 @@ export class AecTenders implements INodeType {
 	 * @returns Standardized tender object with metadata
 	 */
 	private transformTenderData(tender: IDataObject): IDataObject {
-		const tenderObject = (tender.objetoContratacao as string) || '';
+		const tenderObject = (tender.objetoCompra as string) || '';
 		const estimatedValue = (tender.valorTotalEstimado as number) || 0;
+		const orgaoEntidade = tender.orgaoEntidade as IDataObject || {};
+		const unidadeOrgao = tender.unidadeOrgao as IDataObject || {};
+		const amparoLegal = tender.amparoLegal as IDataObject || {};
 		
 		return {
 			// Core PNCP fields (section 2.3.1)
 			pncpId: tender.numeroControlePNCP || '',
-			procuringEntityName: tender.razaoSocial || '',
-			procuringEntityCNPJ: tender.cnpjOrgaoEntidade || '',
+			procuringEntityName: orgaoEntidade.razaoSocial || '',
+			procuringEntityCNPJ: orgaoEntidade.cnpj || '',
 			tenderObject: tenderObject,
-			tenderModality: tender.modalidadeLicitacao || '',
-			tenderSituation: tender.situacaoLicitacao || '',
+			tenderModality: tender.modalidadeNome || '',
+			tenderSituation: tender.situacaoCompraNome || '',
 			publicationDate: tender.dataPublicacaoPncp || '',
 			proposalOpeningDate: tender.dataAberturaProposta || '',
 			estimatedTotalValue: estimatedValue,
 			
 			// Location and administrative data (section 2.3.2)
-			municipalityCode: tender.codigoMunicipio || '',
-			municipalityName: tender.municipio || '',
-			stateCode: tender.uf || '',
+			municipalityCode: unidadeOrgao.codigoIbge || '',
+			municipalityName: unidadeOrgao.municipioNome || '',
+			stateCode: unidadeOrgao.ufSigla || '',
 			
 			// Legal and procedural information (section 2.3.3)
-			legalProcedure: tender.fundamentoLegal || '',
+			legalProcedure: amparoLegal.nome || '',
 			evaluationCriteria: tender.criterioJulgamento || '',
 			participationRegime: tender.regimeExecucao || '',
 			
@@ -399,6 +402,14 @@ export class AecTenders implements INodeType {
 			currency: tender.moeda || 'BRL',
 			budgetDetails: tender.detalhamentoOrcamentario || '',
 			paymentConditions: tender.condicoesPagamento || '',
+			
+			// Additional fields from API
+			process: tender.processo || '',
+			linkSistemaOrigem: tender.linkSistemaOrigem || '',
+			informacaoComplementar: tender.informacaoComplementar || '',
+			dataEncerramentoProposta: tender.dataEncerramentoProposta || '',
+			modoDisputaNome: tender.modoDisputaNome || '',
+			tipoInstrumentoConvocatorioNome: tender.tipoInstrumentoConvocatorioNome || '',
 			
 			// Generated portal URL for direct access
 			portalUrl: this.buildPortalUrl(tender.numeroControlePNCP as string),
@@ -473,7 +484,7 @@ export class AecTenders implements INodeType {
 		else if (value > 100000) score += 10; // 100K-1M = low-medium
 		
 		// Complexity-based risk (30% weight)
-		const obj = ((tender.objetoContratacao as string) || '').toLowerCase();
+		const obj = ((tender.objetoCompra as string) || '').toLowerCase();
 		if (obj.includes('complexa') || obj.includes('integrada') || obj.includes('sistema')) score += 15;
 		if (obj.includes('inovação') || obj.includes('tecnologia') || obj.includes('smart')) score += 10;
 		if (obj.includes('múltipla') || obj.includes('diversas') || obj.includes('várias')) score += 5;
@@ -491,7 +502,7 @@ export class AecTenders implements INodeType {
 		}
 		
 		// Modality-based risk (10% weight)
-		const modality = (tender.modalidadeLicitacao as string) || '';
+		const modality = (tender.modalidadeNome as string) || '';
 		if (modality.includes('Concorrência')) score += 10; // Most complex modality
 		else if (modality.includes('Tomada de Preços')) score += 5;
 		
@@ -503,18 +514,20 @@ export class AecTenders implements INodeType {
 	 * Returns quality score from 0-100
 	 */
 	private assessDataQuality(tender: IDataObject): number {
+		const orgaoEntidade = tender.orgaoEntidade as IDataObject || {};
+		
 		const requiredFields = [
-			'numeroControlePNCP',
-			'razaoSocial', 
-			'objetoContratacao',
-			'dataPublicacaoPncp',
-			'dataAberturaProposta',
-			'valorTotalEstimado',
-			'modalidadeLicitacao'
+			{ key: 'numeroControlePNCP', value: tender.numeroControlePNCP },
+			{ key: 'orgaoEntidade.razaoSocial', value: orgaoEntidade.razaoSocial },
+			{ key: 'objetoCompra', value: tender.objetoCompra },
+			{ key: 'dataPublicacaoPncp', value: tender.dataPublicacaoPncp },
+			{ key: 'dataAberturaProposta', value: tender.dataAberturaProposta },
+			{ key: 'valorTotalEstimado', value: tender.valorTotalEstimado },
+			{ key: 'modalidadeNome', value: tender.modalidadeNome }
 		];
 		
 		const presentFields = requiredFields.filter(field => 
-			tender[field] && tender[field] !== '' && tender[field] !== 0
+			field.value && field.value !== '' && field.value !== 0
 		);
 		
 		return Math.round((presentFields.length / requiredFields.length) * 100);
