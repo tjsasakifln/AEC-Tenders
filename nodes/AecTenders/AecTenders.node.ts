@@ -350,7 +350,7 @@ export class AecTenders implements INodeType {
 
 	private formatDate(date: string): string {
 		const d = new Date(date);
-		return d.toISOString().split('T')[0];
+		return d.toISOString().split('T')[0].replace(/-/g, '');
 	}
 
 	private buildPortalUrl(pncpId: string): string {
@@ -563,7 +563,7 @@ export class AecTenders implements INodeType {
 		params: IDataObject = {},
 		retryCount: number = 0
 	): Promise<IDataObject> {
-		const baseUrl = 'https://pncp.gov.br/api/pncp-consulta/v1';
+		const baseUrl = 'https://pncp.gov.br/api/consulta';
 		const url = `${baseUrl}${endpoint}`;
 		const maxRetries = 3;
 		const baseDelay = 1000; // 1 second base delay
@@ -678,11 +678,12 @@ export class AecTenders implements INodeType {
 			const params = {
 				dataInicial: formattedStartDate,
 				dataFinal: formattedEndDate,
+				codigoModalidadeContratacao: 1, // Concorrência = 1 (required parameter)
 				pagina: page,
 				tamanhoPagina: 50,
 			};
 
-			const response = await this.makeAPIRequest(executeFunctions, '/contratacoes', params);
+			const response = await this.makeAPIRequest(executeFunctions, '/v1/contratacoes/publicacao', params);
 			const tenders = response.data as IDataObject[] || [];
 
 			if (tenders.length === 0) {
@@ -713,6 +714,7 @@ export class AecTenders implements INodeType {
 
 		while (hasMorePages && (returnAll || allTenders.length < limit)) {
 			const params: IDataObject = {
+				dataFinal: new Date().toISOString().split('T')[0].replace(/-/g, ''), // Today's date (required)
 				pagina: page,
 				tamanhoPagina: 50,
 			};
@@ -721,10 +723,7 @@ export class AecTenders implements INodeType {
 				params.uf = stateUf.toUpperCase();
 			}
 
-			// Add filter for open proposals
-			params.situacaoLicitacao = 'ABERTA';
-
-			const response = await this.makeAPIRequest(executeFunctions, '/contratacoes', params);
+			const response = await this.makeAPIRequest(executeFunctions, '/v1/contratacoes/proposta', params);
 			const tenders = response.data as IDataObject[] || [];
 
 			if (tenders.length === 0) {
@@ -753,7 +752,7 @@ export class AecTenders implements INodeType {
 			throw new NodeOperationError(executeFunctions.getNode(), 'Invalid CNPJ format. It must contain exactly 14 digits');
 		}
 
-		const endpoint = `/contratacoes/${cnpj}/${year}/${sequenceNumber}`;
+		const endpoint = `/v1/orgaos/${cnpj}/compras/${year}/${sequenceNumber}`;
 		const response = await this.makeAPIRequest(executeFunctions, endpoint);
 
 		if (!response) {
@@ -778,39 +777,20 @@ export class AecTenders implements INodeType {
 			throw new NodeOperationError(executeFunctions.getNode(), 'Start date and end date are required for keyword search');
 		}
 
-		const formattedStartDate = this.formatDate(startDate);
-		const formattedEndDate = this.formatDate(endDate);
+		// Get all tenders from the date range first
+		const allTenders = await this.listTendersByDate(executeFunctions, itemIndex);
+		
+		// Filter by keywords on client side
+		const keywordArray = keywords.split(',').map((k) => k.trim().toLowerCase());
+		const filteredTenders = allTenders.filter((tender: IDataObject) => {
+			const tenderObject = (tender.tenderObject as string || '').toLowerCase();
+			return keywordArray.some((keyword) => tenderObject.includes(keyword));
+		});
 
-		let allTenders: IDataObject[] = [];
-		let page = 1;
-		let hasMorePages = true;
-
-		while (hasMorePages && (returnAll || allTenders.length < limit)) {
-			const params = {
-				dataInicial: formattedStartDate,
-				dataFinal: formattedEndDate,
-				palavraChave: keywords,
-				pagina: page,
-				tamanhoPagina: 50,
-			};
-
-			const response = await this.makeAPIRequest(executeFunctions, '/contratacoes', params);
-			const tenders = response.data as IDataObject[] || [];
-
-			if (tenders.length === 0) {
-				hasMorePages = false;
-			} else {
-				const transformedTenders = tenders.map((tender) => this.transformTenderData(tender));
-				allTenders.push(...transformedTenders);
-				page++;
-				
-				if (!returnAll && allTenders.length >= limit) {
-					allTenders = allTenders.slice(0, limit);
-					hasMorePages = false;
-				}
-			}
+		if (!returnAll && filteredTenders.length > limit) {
+			return filteredTenders.slice(0, limit);
 		}
 
-		return allTenders;
+		return filteredTenders;
 	}
 }
