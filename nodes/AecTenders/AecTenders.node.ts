@@ -563,7 +563,7 @@ export class AecTenders implements INodeType {
 		params: IDataObject = {},
 		retryCount: number = 0
 	): Promise<IDataObject> {
-		const baseUrl = 'https://pncp.gov.br/api/consulta/v1';
+		const baseUrl = 'https://pncp.gov.br/api/pncp-consulta/v1';
 		const url = `${baseUrl}${endpoint}`;
 		const maxRetries = 3;
 		const baseDelay = 1000; // 1 second base delay
@@ -679,9 +679,10 @@ export class AecTenders implements INodeType {
 				dataInicial: formattedStartDate,
 				dataFinal: formattedEndDate,
 				pagina: page,
+				tamanhoPagina: 50,
 			};
 
-			const response = await this.makeAPIRequest(executeFunctions, '/contratacoes/publicacoes', params);
+			const response = await this.makeAPIRequest(executeFunctions, '/contratacoes', params);
 			const tenders = response.data as IDataObject[] || [];
 
 			if (tenders.length === 0) {
@@ -713,13 +714,17 @@ export class AecTenders implements INodeType {
 		while (hasMorePages && (returnAll || allTenders.length < limit)) {
 			const params: IDataObject = {
 				pagina: page,
+				tamanhoPagina: 50,
 			};
 
 			if (stateUf) {
 				params.uf = stateUf.toUpperCase();
 			}
 
-			const response = await this.makeAPIRequest(executeFunctions, '/contratacoes/publicacoes-vigentes', params);
+			// Add filter for open proposals
+			params.situacaoLicitacao = 'ABERTA';
+
+			const response = await this.makeAPIRequest(executeFunctions, '/contratacoes', params);
 			const tenders = response.data as IDataObject[] || [];
 
 			if (tenders.length === 0) {
@@ -748,7 +753,7 @@ export class AecTenders implements INodeType {
 			throw new NodeOperationError(executeFunctions.getNode(), 'Invalid CNPJ format. It must contain exactly 14 digits');
 		}
 
-		const endpoint = `/contratacoes/publicacao/${cnpj}/${year}/${sequenceNumber}`;
+		const endpoint = `/contratacoes/${cnpj}/${year}/${sequenceNumber}`;
 		const response = await this.makeAPIRequest(executeFunctions, endpoint);
 
 		if (!response) {
@@ -760,6 +765,8 @@ export class AecTenders implements INodeType {
 
 	public async searchTendersByKeyword(executeFunctions: IExecuteFunctions, itemIndex: number): Promise<IDataObject[]> {
 		const keywords = executeFunctions.getNodeParameter('keywords', itemIndex) as string;
+		const startDate = executeFunctions.getNodeParameter('startDate', itemIndex) as string;
+		const endDate = executeFunctions.getNodeParameter('endDate', itemIndex) as string;
 		const returnAll = executeFunctions.getNodeParameter('returnAll', itemIndex) as boolean;
 		const limit = executeFunctions.getNodeParameter('limit', itemIndex, 50) as number;
 
@@ -767,18 +774,43 @@ export class AecTenders implements INodeType {
 			throw new NodeOperationError(executeFunctions.getNode(), 'Keywords are required for search');
 		}
 
-		const keywordArray = keywords.split(',').map((k) => k.trim().toLowerCase());
-		const allTenders = await this.listTendersByDate(executeFunctions, itemIndex);
-
-		const filteredTenders = allTenders.filter((tender: IDataObject) => {
-			const tenderObject = (tender.tenderObject as string || '').toLowerCase();
-			return keywordArray.some((keyword) => tenderObject.includes(keyword));
-		});
-
-		if (!returnAll && filteredTenders.length > limit) {
-			return filteredTenders.slice(0, limit);
+		if (!startDate || !endDate) {
+			throw new NodeOperationError(executeFunctions.getNode(), 'Start date and end date are required for keyword search');
 		}
 
-		return filteredTenders;
+		const formattedStartDate = this.formatDate(startDate);
+		const formattedEndDate = this.formatDate(endDate);
+
+		let allTenders: IDataObject[] = [];
+		let page = 1;
+		let hasMorePages = true;
+
+		while (hasMorePages && (returnAll || allTenders.length < limit)) {
+			const params = {
+				dataInicial: formattedStartDate,
+				dataFinal: formattedEndDate,
+				palavraChave: keywords,
+				pagina: page,
+				tamanhoPagina: 50,
+			};
+
+			const response = await this.makeAPIRequest(executeFunctions, '/contratacoes', params);
+			const tenders = response.data as IDataObject[] || [];
+
+			if (tenders.length === 0) {
+				hasMorePages = false;
+			} else {
+				const transformedTenders = tenders.map((tender) => this.transformTenderData(tender));
+				allTenders.push(...transformedTenders);
+				page++;
+				
+				if (!returnAll && allTenders.length >= limit) {
+					allTenders = allTenders.slice(0, limit);
+					hasMorePages = false;
+				}
+			}
+		}
+
+		return allTenders;
 	}
 }
