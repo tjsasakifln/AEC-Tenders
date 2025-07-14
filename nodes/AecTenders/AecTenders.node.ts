@@ -590,10 +590,7 @@ export class AecTenders implements INodeType {
 			
 			// Validate response structure
 			if (!response.body) {
-				throw new NodeApiError(executeFunctions.getNode(), new Error('Empty response from PNCP API'), {
-					message: 'API PNCP retornou resposta vazia',
-					description: 'Verifique se os parâmetros da consulta estão corretos'
-				});
+				throw new NodeApiError(executeFunctions.getNode(), { message: 'Empty response from PNCP API' });
 			}
 
 			return response.body as IDataObject;
@@ -659,81 +656,6 @@ export class AecTenders implements INodeType {
 		return new Promise(resolve => setTimeout(resolve, ms));
 	}
 
-	/**
-	 * Validates input parameters before making API requests
-	 * Prevents common user errors that would result in API failures
-	 */
-	private validateInputParameters(operation: string, params: IDataObject): void {
-		switch (operation) {
-			case 'listByPublicationDate':
-			case 'searchByKeyword':
-				const startDate = params.startDate as string;
-				const endDate = params.endDate as string;
-				
-				if (!startDate || !endDate) {
-					throw new NodeOperationError(
-						{} as any, // Node reference not needed for validation errors
-						'Datas de início e fim são obrigatórias'
-					);
-				}
-				
-				// Validate date format (ISO 8601)
-				const dateRegex = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(.\d{3})?Z?)?$/;
-				if (!dateRegex.test(startDate) || !dateRegex.test(endDate)) {
-					throw new NodeOperationError(
-						{} as any,
-						'Formato de data inválido. Use o formato YYYY-MM-DD ou ISO 8601 completo'
-					);
-				}
-				
-				// Validate date range (max 1 year to prevent API overload)
-				const start = new Date(startDate);
-				const end = new Date(endDate);
-				const daysDiff = (end.getTime() - start.getTime()) / (1000 * 3600 * 24);
-				
-				if (daysDiff < 0) {
-					throw new NodeOperationError(
-						{} as any,
-						'Data de início deve ser anterior à data de fim'
-					);
-				}
-				
-				if (daysDiff > 365) {
-					throw new NodeOperationError(
-						{} as any,
-						'Período máximo de consulta é 1 ano. Reduza o intervalo de datas.'
-					);
-				}
-				break;
-				
-			case 'getDetailsById':
-				const cnpj = params.cnpj as string;
-				const year = params.year as number;
-				const sequenceNumber = params.sequenceNumber as number;
-				
-				if (!this.validateCNPJ(cnpj)) {
-					throw new NodeOperationError(
-						{} as any,
-						'CNPJ inválido. Deve conter exatamente 14 dígitos numéricos'
-					);
-				}
-				
-				if (!year || year < 2000 || year > new Date().getFullYear() + 1) {
-					throw new NodeOperationError(
-						{} as any,
-						'Ano inválido. Deve estar entre 2000 e o próximo ano'
-					);
-				}
-				
-				if (!sequenceNumber || sequenceNumber < 1 || sequenceNumber > 999999) {
-					throw new NodeOperationError(
-						{} as any,
-						'Número sequencial inválido. Deve estar entre 1 e 999999'
-					);
-				}
-				break;
-		}
-	}
 
 	public async listTendersByDate(executeFunctions: IExecuteFunctions, itemIndex: number): Promise<IDataObject[]> {
 		const startDate = executeFunctions.getNodeParameter('startDate', itemIndex) as string;
