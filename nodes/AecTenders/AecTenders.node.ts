@@ -353,8 +353,18 @@ export class AecTenders implements INodeType {
 		return d.toISOString().split('T')[0].replace(/-/g, '');
 	}
 
-	private buildPortalUrl(pncpId: string): string {
-		return `https://pncp.gov.br/app/editais/${pncpId}`;
+	private buildPortalUrl(tender: IDataObject): string {
+		const orgaoEntidade = tender.orgaoEntidade as IDataObject || {};
+		const cnpj = orgaoEntidade.cnpj as string;
+		const ano = tender.anoCompra as number;
+		const sequencial = tender.sequencialCompra as number;
+		
+		if (cnpj && ano && sequencial) {
+			return `https://pncp.gov.br/app/editais/${cnpj}/${ano}/${sequencial}`;
+		}
+		
+		// Fallback to original format if fields are missing
+		return `https://pncp.gov.br/app/editais/${tender.numeroControlePNCP}`;
 	}
 
 	/**
@@ -372,7 +382,7 @@ export class AecTenders implements INodeType {
 		const amparoLegal = tender.amparoLegal as IDataObject || {};
 		
 		return {
-			// Core PNCP fields (section 2.3.1)
+			// Core PNCP fields - using actual API fields
 			pncpId: tender.numeroControlePNCP || '',
 			procuringEntityName: orgaoEntidade.razaoSocial || '',
 			procuringEntityCNPJ: orgaoEntidade.cnpj || '',
@@ -383,38 +393,58 @@ export class AecTenders implements INodeType {
 			proposalOpeningDate: tender.dataAberturaProposta || '',
 			estimatedTotalValue: estimatedValue,
 			
-			// Location and administrative data (section 2.3.2)
+			// Location and administrative data - using actual API fields
 			municipalityCode: unidadeOrgao.codigoIbge || '',
 			municipalityName: unidadeOrgao.municipioNome || '',
 			stateCode: unidadeOrgao.ufSigla || '',
+			stateName: unidadeOrgao.ufNome || '',
+			unitName: unidadeOrgao.nomeUnidade || '',
+			unitCode: unidadeOrgao.codigoUnidade || '',
 			
-			// Legal and procedural information (section 2.3.3)
+			// Legal and procedural information - using actual API fields
 			legalProcedure: amparoLegal.nome || '',
-			evaluationCriteria: tender.criterioJulgamento || '',
-			participationRegime: tender.regimeExecucao || '',
+			legalDescription: amparoLegal.descricao || '',
+			legalCode: amparoLegal.codigo || '',
 			
-			// Technical specifications (section 2.3.4)
-			technicalSpecification: tender.especificacaoTecnica || '',
-			deliveryAddress: tender.enderecoEntrega || '',
-			contractDuration: tender.prazoExecucao || '',
-			
-			// Financial details (section 2.3.5)
-			currency: tender.moeda || 'BRL',
-			budgetDetails: tender.detalhamentoOrcamentario || '',
-			paymentConditions: tender.condicoesPagamento || '',
-			
-			// Additional fields from API
+			// Process and identification data - using actual API fields
 			process: tender.processo || '',
+			numeroCompra: tender.numeroCompra || '',
+			anoCompra: tender.anoCompra || '',
+			sequencialCompra: tender.sequencialCompra || '',
+			
+			// Additional operational data - using actual API fields
 			linkSistemaOrigem: tender.linkSistemaOrigem || '',
 			informacaoComplementar: tender.informacaoComplementar || '',
 			dataEncerramentoProposta: tender.dataEncerramentoProposta || '',
 			modoDisputaNome: tender.modoDisputaNome || '',
 			tipoInstrumentoConvocatorioNome: tender.tipoInstrumentoConvocatorioNome || '',
+			justificativaPresencial: tender.justificativaPresencial || '',
+			linkProcessoEletronico: tender.linkProcessoEletronico || '',
+			usuarioNome: tender.usuarioNome || '',
+			
+			// Financial details
+			currency: 'BRL', // Always BRL for Brazilian government
+			valorTotalHomologado: tender.valorTotalHomologado || '',
+			srp: tender.srp || false, // Sistema de Registro de Preços
+			
+			// Timestamps - using actual API fields
+			dataInclusao: tender.dataInclusao || '',
+			dataAtualizacao: tender.dataAtualizacao || '',
+			dataAtualizacaoGlobal: tender.dataAtualizacaoGlobal || '',
+			
+			// Fields that don't exist in API - setting to empty for backward compatibility
+			evaluationCriteria: '',
+			participationRegime: '',
+			technicalSpecification: '',
+			deliveryAddress: '',
+			contractDuration: '',
+			budgetDetails: '',
+			paymentConditions: '',
 			
 			// Generated portal URL for direct access
-			portalUrl: this.buildPortalUrl(tender.numeroControlePNCP as string),
+			portalUrl: this.buildPortalUrl(tender),
 			
-			// Metadata automáticos (section 2.3.6)
+			// Metadata automáticos
 			_extractedAt: new Date().toISOString(),
 			_category: this.categorizeTender(tenderObject),
 			_riskScore: this.calculateRiskScore(tender),
