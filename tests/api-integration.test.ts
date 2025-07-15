@@ -44,7 +44,7 @@ describe('PNCP API Integration', () => {
 
       const result = await (nodeInstance as any).makeAPIRequest(
         mockExecuteFunctions,
-        '/contratacoes/publicacoes',
+        '/v1/contratacoes/publicacoes',
         { dataInicial: '2025-01-01', dataFinal: '2025-01-31' }
       );
 
@@ -52,13 +52,16 @@ describe('PNCP API Integration', () => {
         mockExecuteFunctions,
         {
           method: 'GET',
-          url: 'https://pncp.gov.br/api/consulta/v1/contratacoes/publicacoes',
+          url: 'https://pncp.gov.br/api/pncp-consulta/v1/contratacoes/publicacoes',
           qs: { dataInicial: '2025-01-01', dataFinal: '2025-01-31' },
           headers: {
             Accept: 'application/json',
+            'User-Agent': 'n8n-aec-tenders/0.1.0',
+            'X-Request-ID': expect.any(String),
           },
           returnFullResponse: true,
           json: true,
+          timeout: 30000,
         }
       );
 
@@ -72,10 +75,10 @@ describe('PNCP API Integration', () => {
       await expect(
         (nodeInstance as any).makeAPIRequest(
           mockExecuteFunctions,
-          '/contratacoes/publicacoes',
+          '/v1/contratacoes/publicacoes',
           {}
         )
-      ).rejects.toThrow('Failed to fetch data from PNCP API');
+      ).rejects.toThrow('Erro inesperado na API PNCP: Network error');
     });
   });
 
@@ -199,6 +202,7 @@ describe('PNCP API Integration', () => {
 
       jest.spyOn(nodeInstance as any, 'listTendersByDate').mockResolvedValue(mockTenders);
 
+      (mockExecuteFunctions.getNodeParameter as jest.Mock).mockClear();
       (mockExecuteFunctions.getNodeParameter as jest.Mock)
         .mockReturnValueOnce('construção') // lowercase keyword
         .mockReturnValueOnce('2025-01-01')
@@ -221,7 +225,7 @@ describe('PNCP API Integration', () => {
         .mockReturnValueOnce(1); // sequenceNumber
 
       await expect(
-        (nodeInstance as any).getTenderDetailsById(mockExecuteFunctions, 0)
+        (nodeInstance as any).getTenderById(mockExecuteFunctions, 0)
       ).rejects.toThrow('Invalid CNPJ format');
     });
 

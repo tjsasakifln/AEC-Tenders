@@ -381,8 +381,9 @@ export class AecTenders implements INodeType {
 	 * @returns Standardized tender object with metadata
 	 */
 	private transformTenderData(tender: IDataObject): IDataObject {
-		const tenderObject = String(tender.objetoCompra || '').trim();
-		const estimatedValue = Number(tender.valorTotalEstimado || 0);
+		// Handle different field names from API responses
+		const tenderObject = String(tender.objetoContratacao || tender.objetoCompra || '').trim();
+		const estimatedValue = Number(tender.valorEstimadoTotal || tender.valorTotalEstimado || 0);
 		const orgaoEntidade = tender.orgaoEntidade as IDataObject || {};
 		const unidadeOrgao = tender.unidadeOrgao as IDataObject || {};
 		const amparoLegal = tender.amparoLegal as IDataObject || {};
@@ -390,12 +391,12 @@ export class AecTenders implements INodeType {
 		return {
 			// Core PNCP fields - using actual API fields with proper type coercion
 			pncpId: String(tender.numeroControlePNCP || '').trim(),
-			procuringEntityName: String(orgaoEntidade.razaoSocial || '').trim(),
+			procuringEntityName: String(tender.razaoSocial || orgaoEntidade.razaoSocial || '').trim(),
 			procuringEntityCNPJ: String(orgaoEntidade.cnpj || '').trim(),
 			tenderObject: tenderObject,
-			tenderModality: String(tender.modalidadeNome || '').trim(),
-			tenderSituation: String(tender.situacaoCompraNome || '').trim(),
-			publicationDate: String(tender.dataPublicacaoPncp || '').trim(),
+			tenderModality: String(tender.modalidadeContratacao || tender.modalidadeNome || '').trim(),
+			tenderSituation: String(tender.situacaoContratacao || tender.situacaoCompraNome || '').trim(),
+			publicationDate: String(tender.dataPublicacaoTURE || tender.dataPublicacaoPncp || '').trim(),
 			proposalOpeningDate: String(tender.dataAberturaProposta || '').trim(),
 			estimatedTotalValue: estimatedValue,
 			
@@ -612,7 +613,7 @@ export class AecTenders implements INodeType {
 		params: IDataObject = {},
 		retryCount: number = 0
 	): Promise<IDataObject> {
-		const baseUrl = 'https://pncp.gov.br/api/consulta';
+		const baseUrl = 'https://pncp.gov.br/api/pncp-consulta';
 		const url = `${baseUrl}${endpoint}`;
 		const maxRetries = 3;
 		const baseDelay = 1000; // 1 second base delay
@@ -753,10 +754,14 @@ export class AecTenders implements INodeType {
 				page++;
 				
 				if (!returnAll && allTenders.length >= limit) {
-					allTenders = allTenders.slice(0, limit);
 					hasMorePages = false;
 				}
 			}
+		}
+
+		// Apply limit if not returning all
+		if (!returnAll && allTenders.length > limit) {
+			return allTenders.slice(0, limit);
 		}
 
 		return allTenders;
@@ -793,10 +798,14 @@ export class AecTenders implements INodeType {
 				page++;
 				
 				if (!returnAll && allTenders.length >= limit) {
-					allTenders = allTenders.slice(0, limit);
 					hasMorePages = false;
 				}
 			}
+		}
+
+		// Apply limit if not returning all
+		if (!returnAll && allTenders.length > limit) {
+			return allTenders.slice(0, limit);
 		}
 
 		return allTenders;
@@ -828,7 +837,7 @@ export class AecTenders implements INodeType {
 		const returnAll = executeFunctions.getNodeParameter('returnAll', itemIndex) as boolean;
 		const limit = executeFunctions.getNodeParameter('limit', itemIndex, 50) as number;
 
-		if (!keywords.trim()) {
+		if (!keywords || typeof keywords !== 'string' || !keywords.trim()) {
 			throw new NodeOperationError(executeFunctions.getNode(), 'Keywords are required for search');
 		}
 
@@ -843,7 +852,14 @@ export class AecTenders implements INodeType {
 		const keywordArray = keywords.split(',').map((k) => k.trim().toLowerCase());
 		const filteredTenders = allTenders.filter((tender: IDataObject) => {
 			const tenderObject = (tender.tenderObject as string || '').toLowerCase();
-			return keywordArray.some((keyword) => tenderObject.includes(keyword));
+			const procuringEntityName = (tender.procuringEntityName as string || '').toLowerCase();
+			const tenderModality = (tender.tenderModality as string || '').toLowerCase();
+			
+			return keywordArray.some((keyword) => 
+				tenderObject.includes(keyword) || 
+				procuringEntityName.includes(keyword) ||
+				tenderModality.includes(keyword)
+			);
 		});
 
 		if (!returnAll && filteredTenders.length > limit) {
