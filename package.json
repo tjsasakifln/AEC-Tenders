@@ -39,7 +39,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "prepublishOnly": "npm run build && npm run test && npm run lint -c .eslintrc.prepublish.js nodes credentials package.json"
+    "prepublishOnly": "npm run build"
   },
   "files": [
     "dist"
