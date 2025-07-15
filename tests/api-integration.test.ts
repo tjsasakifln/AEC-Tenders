@@ -52,7 +52,7 @@ describe('PNCP API Integration', () => {
         mockExecuteFunctions,
         {
           method: 'GET',
-          url: 'https://pncp.gov.br/api/pncp-consulta/v1/contratacoes/publicacoes',
+          url: 'https://pncp.gov.br/api/consulta/v1/contratacoes/publicacao',
           qs: { dataInicial: '2025-01-01', dataFinal: '2025-01-31' },
           headers: {
             Accept: 'application/json',
@@ -75,7 +75,7 @@ describe('PNCP API Integration', () => {
       await expect(
         (nodeInstance as any).makeAPIRequest(
           mockExecuteFunctions,
-          '/v1/contratacoes/publicacoes',
+          '/v1/contratacoes/publicacao',
           {}
         )
       ).rejects.toThrow('Erro inesperado na API PNCP: Network error');

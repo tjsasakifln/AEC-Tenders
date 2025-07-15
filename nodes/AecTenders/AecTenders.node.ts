@@ -613,7 +613,7 @@ export class AecTenders implements INodeType {
 		params: IDataObject = {},
 		retryCount: number = 0
 	): Promise<IDataObject> {
-		const baseUrl = 'https://pncp.gov.br/api/pncp-consulta';
+		const baseUrl = 'https://pncp.gov.br/api/consulta';
 		const url = `${baseUrl}${endpoint}`;
 		const maxRetries = 3;
 		const baseDelay = 1000; // 1 second base delay
@@ -743,7 +743,7 @@ export class AecTenders implements INodeType {
 				tamanhoPagina: 50,
 			};
 
-			const response = await this.makeAPIRequest(executeFunctions, '/v1/contratacoes/publicacoes', params);
+			const response = await this.makeAPIRequest(executeFunctions, '/v1/contratacoes/publicacao', params);
 			const tenders = response.data as IDataObject[] || [];
 
 			if (tenders.length === 0) {
@@ -787,7 +787,7 @@ export class AecTenders implements INodeType {
 				params.uf = stateUf.toUpperCase();
 			}
 
-			const response = await this.makeAPIRequest(executeFunctions, '/v1/contratacoes/propostas', params);
+			const response = await this.makeAPIRequest(executeFunctions, '/v1/contratacoes/proposta', params);
 			const tenders = response.data as IDataObject[] || [];
 
 			if (tenders.length === 0) {
