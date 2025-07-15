@@ -353,6 +353,13 @@ export class AecTenders implements INodeType {
 	}
 
 	private buildPortalUrl(tender: IDataObject): string {
+		// First try to use numeroControlePNCP which is the standard PNCP identifier
+		const numeroControlePNCP = tender.numeroControlePNCP as string;
+		if (numeroControlePNCP && numeroControlePNCP.trim() !== '') {
+			return `https://pncp.gov.br/app/editais/${numeroControlePNCP}`;
+		}
+		
+		// Fallback: try to construct from individual fields
 		const orgaoEntidade = tender.orgaoEntidade as IDataObject || {};
 		const cnpj = orgaoEntidade.cnpj as string;
 		const ano = tender.anoCompra as number;
@@ -362,8 +369,8 @@ export class AecTenders implements INodeType {
 			return `https://pncp.gov.br/app/editais/${cnpj}/${ano}/${sequencial}`;
 		}
 		
-		// Fallback to original format if fields are missing
-		return `https://pncp.gov.br/app/editais/${tender.numeroControlePNCP}`;
+		// Final fallback - return empty string instead of undefined URL
+		return '';
 	}
 
 	/**
@@ -374,62 +381,62 @@ export class AecTenders implements INodeType {
 	 * @returns Standardized tender object with metadata
 	 */
 	private transformTenderData(tender: IDataObject): IDataObject {
-		const tenderObject = (tender.objetoCompra as string) || '';
-		const estimatedValue = (tender.valorTotalEstimado as number) || 0;
+		const tenderObject = String(tender.objetoCompra || '').trim();
+		const estimatedValue = Number(tender.valorTotalEstimado || 0);
 		const orgaoEntidade = tender.orgaoEntidade as IDataObject || {};
 		const unidadeOrgao = tender.unidadeOrgao as IDataObject || {};
 		const amparoLegal = tender.amparoLegal as IDataObject || {};
 		
 		return {
-			// Core PNCP fields - using actual API fields
-			pncpId: tender.numeroControlePNCP || '',
-			procuringEntityName: orgaoEntidade.razaoSocial || '',
-			procuringEntityCNPJ: orgaoEntidade.cnpj || '',
+			// Core PNCP fields - using actual API fields with proper type coercion
+			pncpId: String(tender.numeroControlePNCP || '').trim(),
+			procuringEntityName: String(orgaoEntidade.razaoSocial || '').trim(),
+			procuringEntityCNPJ: String(orgaoEntidade.cnpj || '').trim(),
 			tenderObject: tenderObject,
-			tenderModality: tender.modalidadeNome || '',
-			tenderSituation: tender.situacaoCompraNome || '',
-			publicationDate: tender.dataPublicacaoPncp || '',
-			proposalOpeningDate: tender.dataAberturaProposta || '',
+			tenderModality: String(tender.modalidadeNome || '').trim(),
+			tenderSituation: String(tender.situacaoCompraNome || '').trim(),
+			publicationDate: String(tender.dataPublicacaoPncp || '').trim(),
+			proposalOpeningDate: String(tender.dataAberturaProposta || '').trim(),
 			estimatedTotalValue: estimatedValue,
 			
-			// Location and administrative data - using actual API fields
-			municipalityCode: unidadeOrgao.codigoIbge || '',
-			municipalityName: unidadeOrgao.municipioNome || '',
-			stateCode: unidadeOrgao.ufSigla || '',
-			stateName: unidadeOrgao.ufNome || '',
-			unitName: unidadeOrgao.nomeUnidade || '',
-			unitCode: unidadeOrgao.codigoUnidade || '',
+			// Location and administrative data - using actual API fields with proper handling
+			municipalityCode: String(unidadeOrgao.codigoIbge || '').trim(),
+			municipalityName: String(unidadeOrgao.municipioNome || '').trim(),
+			stateCode: String(unidadeOrgao.ufSigla || '').trim(),
+			stateName: String(unidadeOrgao.ufNome || '').trim(),
+			unitName: String(unidadeOrgao.nomeUnidade || '').trim(),
+			unitCode: String(unidadeOrgao.codigoUnidade || '').trim(),
 			
-			// Legal and procedural information - using actual API fields
-			legalProcedure: amparoLegal.nome || '',
-			legalDescription: amparoLegal.descricao || '',
-			legalCode: amparoLegal.codigo || '',
+			// Legal and procedural information - using actual API fields with proper handling
+			legalProcedure: String(amparoLegal.nome || '').trim(),
+			legalDescription: String(amparoLegal.descricao || '').trim(),
+			legalCode: String(amparoLegal.codigo || '').trim(),
 			
-			// Process and identification data - using actual API fields
-			process: tender.processo || '',
-			numeroCompra: tender.numeroCompra || '',
-			anoCompra: tender.anoCompra || '',
-			sequencialCompra: tender.sequencialCompra || '',
+			// Process and identification data - using actual API fields with proper handling
+			process: String(tender.processo || '').trim(),
+			numeroCompra: String(tender.numeroCompra || '').trim(),
+			anoCompra: Number(tender.anoCompra || 0),
+			sequencialCompra: Number(tender.sequencialCompra || 0),
 			
-			// Additional operational data - using actual API fields
-			linkSistemaOrigem: tender.linkSistemaOrigem || '',
-			informacaoComplementar: tender.informacaoComplementar || '',
-			dataEncerramentoProposta: tender.dataEncerramentoProposta || '',
-			modoDisputaNome: tender.modoDisputaNome || '',
-			tipoInstrumentoConvocatorioNome: tender.tipoInstrumentoConvocatorioNome || '',
-			justificativaPresencial: tender.justificativaPresencial || '',
-			linkProcessoEletronico: tender.linkProcessoEletronico || '',
-			usuarioNome: tender.usuarioNome || '',
+			// Additional operational data - using actual API fields with proper handling
+			linkSistemaOrigem: String(tender.linkSistemaOrigem || '').trim(),
+			informacaoComplementar: String(tender.informacaoComplementar || '').trim(),
+			dataEncerramentoProposta: String(tender.dataEncerramentoProposta || '').trim(),
+			modoDisputaNome: String(tender.modoDisputaNome || '').trim(),
+			tipoInstrumentoConvocatorioNome: String(tender.tipoInstrumentoConvocatorioNome || '').trim(),
+			justificativaPresencial: String(tender.justificativaPresencial || '').trim(),
+			linkProcessoEletronico: String(tender.linkProcessoEletronico || '').trim(),
+			usuarioNome: String(tender.usuarioNome || '').trim(),
 			
 			// Financial details
 			currency: 'BRL', // Always BRL for Brazilian government
-			valorTotalHomologado: tender.valorTotalHomologado || '',
-			srp: tender.srp || false, // Sistema de Registro de Preços
+			valorTotalHomologado: Number(tender.valorTotalHomologado || 0),
+			srp: Boolean(tender.srp), // Sistema de Registro de Preços
 			
-			// Timestamps - using actual API fields
-			dataInclusao: tender.dataInclusao || '',
-			dataAtualizacao: tender.dataAtualizacao || '',
-			dataAtualizacaoGlobal: tender.dataAtualizacaoGlobal || '',
+			// Timestamps - using actual API fields with proper handling
+			dataInclusao: String(tender.dataInclusao || '').trim(),
+			dataAtualizacao: String(tender.dataAtualizacao || '').trim(),
+			dataAtualizacaoGlobal: String(tender.dataAtualizacaoGlobal || '').trim(),
 			
 			// Fields that don't exist in API - setting to empty for backward compatibility
 			evaluationCriteria: '',
@@ -735,7 +742,7 @@ export class AecTenders implements INodeType {
 				tamanhoPagina: 50,
 			};
 
-			const response = await this.makeAPIRequest(executeFunctions, '/v1/contratacoes/publicacao', params);
+			const response = await this.makeAPIRequest(executeFunctions, '/v1/contratacoes/publicacoes', params);
 			const tenders = response.data as IDataObject[] || [];
 
 			if (tenders.length === 0) {
@@ -775,7 +782,7 @@ export class AecTenders implements INodeType {
 				params.uf = stateUf.toUpperCase();
 			}
 
-			const response = await this.makeAPIRequest(executeFunctions, '/v1/contratacoes/proposta', params);
+			const response = await this.makeAPIRequest(executeFunctions, '/v1/contratacoes/propostas', params);
 			const tenders = response.data as IDataObject[] || [];
 
 			if (tenders.length === 0) {

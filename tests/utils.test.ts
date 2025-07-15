@@ -95,7 +95,7 @@ describe('AecTenders Utility Functions', () => {
 
       invalidTenders.forEach(tender => {
         const result = (nodeInstance as any).buildPortalUrl(tender);
-        expect(result).toBe(`https://pncp.gov.br/app/editais/${tender.numeroControlePNCP}`);
+        expect(result).toBe(''); // Should return empty string for invalid data
       });
     });
   });
