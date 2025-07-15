@@ -1,5 +1,5 @@
 {
-  "name": "n8n-nodes-aec-tenders",
+  "name": "n8n-nodes-pncp-aec",
   "version": "0.1.0",
   "description": "n8n node for fetching public construction tenders from Brazil's PNCP (Portal Nacional de Contratações Públicas)",
   "keywords": [
@@ -29,7 +29,7 @@
   "engines": {
     "node": ">=20.15"
   },
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "build": "npx rimraf dist && tsc && gulp build:icons",
     "dev": "tsc --watch",

@@ -1,4 +1,4 @@
-# 🏗️ n8n-nodes-aec-tenders | Brazilian Public Procurement Automation 2025
+# 🏗️ n8n-nodes-pncp-aec | Brazilian Public Procurement Automation 2025
 
 **PNCP Integration for n8n** | Transform tender monitoring into intelligent workflows
 
@@ -45,10 +45,13 @@ Advanced search algorithm by:
 
 ## ⚡ Quick Installation (3 minutes)
 
-### Via NPM (Coming Soon)
+### Via NPM (Recommended)
 ```bash
-# Soon on npm registry
-npm install n8n-nodes-aec-tenders
+# Install globally
+npm install -g n8n-nodes-pncp-aec
+
+# Or install locally in your n8n project
+npm install n8n-nodes-pncp-aec
 ```
 
 ### Manual Installation for Development
