@@ -17,14 +17,14 @@
     "architecture"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/tjsasakifln/n8n-nodes-aec-tenders#readme",
+  "homepage": "https://github.com/tjsasakifln/AEC-Tenders#readme",
   "author": {
     "name": "Tiago Sasaki",
     "email": "tiago@confenge.com.br"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/tjsasakifln/n8n-nodes-aec-tenders.git"
+    "url": "https://github.com/tjsasakifln/AEC-Tenders.git"
   },
   "engines": {
     "node": ">=20.15"

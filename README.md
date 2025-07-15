@@ -5,7 +5,7 @@
 [![n8n compatibility](https://img.shields.io/badge/n8n-v1.82%2B-brightgreen)](https://n8n.io)
 [![Node.js version](https://img.shields.io/badge/node-%3E%3D20.15-blue)](https://nodejs.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![GitHub](https://img.shields.io/badge/GitHub-tjsasakifln%2Fn8n--nodes--aec--tenders-blue)](https://github.com/tjsasakifln/n8n-nodes-aec-tenders)
+[![GitHub](https://img.shields.io/badge/GitHub-tjsasakifln%2FAEC--Tenders-blue)](https://github.com/tjsasakifln/AEC-Tenders)
 
 Fully automate your search for **Brazilian public tenders** with this premium n8n integration. Connect directly to the **National Public Procurement Portal (PNCP)** and transform opportunities into structured data for your **AEC** (Architecture, Engineering and Construction) workflows.
 
@@ -57,7 +57,7 @@ npm install n8n-nodes-pncp-aec
 ### Manual Installation for Development
 ```bash
 # 1. Clone and configure
-git clone https://github.com/tjsasakifln/n8n-nodes-aec-tenders.git
+git clone https://github.com/tjsasakifln/AEC-Tenders.git
 cd n8n-nodes-aec-tenders && npm install && npm run build
 
 # 2. Local link to n8n
@@ -209,7 +209,7 @@ interface TenderData {
 ## 🤝 Technical Support
 
 - 📧 **Email**: tiago@confenge.com.br
-- 📱 **Issues**: [GitHub Issues](https://github.com/tjsasakifln/n8n-nodes-aec-tenders/issues)
+- 📱 **Issues**: [GitHub Issues](https://github.com/tjsasakifln/AEC-Tenders/issues)
 
 ## 🌍 Global Compatibility
 
@@ -232,7 +232,7 @@ Developed with ❤️ for the Brazilian engineering community by [Tiago Sasaki](
 ### 🔥 **Accelerate your growth in 2025 - Clone and configure!**
 
 ```bash
-git clone https://github.com/tjsasakifln/n8n-nodes-aec-tenders.git
+git clone https://github.com/tjsasakifln/AEC-Tenders.git
 cd n8n-nodes-aec-tenders && npm install && npm run build
 ```
 

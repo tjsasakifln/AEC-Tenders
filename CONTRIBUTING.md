@@ -14,7 +14,7 @@ Thank you for your interest in contributing to the n8n AEC Tenders Node! This do
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/tjsasakifln/n8n-nodes-aec-tenders.git
+git clone https://github.com/tjsasakifln/AEC-Tenders.git
 cd n8n-nodes-aec-tenders
 ```
 
