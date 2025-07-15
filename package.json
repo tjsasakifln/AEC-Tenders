@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-pncp-aec",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "n8n node for fetching public construction tenders from Brazil's PNCP (Portal Nacional de Contratações Públicas)",
   "keywords": [
     "n8n-community-node-package",
